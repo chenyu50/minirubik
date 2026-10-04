@@ -1,0 +1,27 @@
+
+Program exited with code: 0
+===== instructions retired
+786438
+===== simulation information (processor configuration, input file, ...)
+ISA extensions: 
+processor: RV32_ISS
+source file: tools/memory_probe.s
+
+        0.19 real         0.12 user         0.03 sys
+           122404864  maximum resident set size
+                   0  average shared memory size
+                   0  average unshared data size
+                   0  average unshared stack size
+                9887  page reclaims
+                  34  page faults
+                   0  swaps
+                   0  block input operations
+                   0  block output operations
+                   1  messages sent
+                   0  messages received
+                   0  signals received
+                   0  voluntary context switches
+                1029  involuntary context switches
+          1470522474  instructions retired
+           477290566  cycles elapsed
+            72287120  peak memory footprint
