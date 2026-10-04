@@ -1,0 +1,11 @@
+
+Program exited with code: 0
+===== instructions retired
+4000009
+===== wall-clock model execution time (ms)
+13367
+===== simulation information (processor configuration, input file, ...)
+ISA extensions: 
+processor: RV32_5S
+source file: tools/rate_probe.s
+
