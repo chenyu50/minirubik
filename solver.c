@@ -42,6 +42,9 @@ static const uint8_t twist[3][CUBIES] = {
 static uint16_t permutation[3][PERMUTATIONS];
 static uint16_t orientation[3][ORIENTATIONS];
 
+static uint8_t perm_distance[PERMUTATIONS];
+static uint8_t ori_distance[ORIENTATIONS];
+
 /* The three quarter-turns preserve the fixed front-upper-left corner. */
 /*@ requires face < 3;
     assigns \nothing;
@@ -214,6 +217,60 @@ static void build_transitions(void)
     }
 }
 
+static int build_projection_distances(
+    uint16_t count, uint16_t transitions[3][count], uint8_t *distance)
+{
+    uint16_t queue[PERMUTATIONS];
+    uint32_t head = 0, tail = 1;
+
+    memset(distance, UINT8_MAX, count);
+    distance[0] = 0;
+    queue[0] = 0;
+
+    while (head < tail) {
+        uint16_t here = queue[head++];
+        if (distance[here] >= UINT8_MAX - 1U)
+            return 0;
+        uint8_t next_distance = (uint8_t) (distance[here] + 1U);
+
+        for (uint8_t face = 0; face < 3; ++face) {
+            uint16_t next = here;
+            for (uint8_t turn = 0; turn < 3; ++turn) {
+                next = transitions[face][next];
+                if (next >= count)
+                    return 0;
+                if (distance[next] == UINT8_MAX) {
+                    if (tail >= count)
+                        return 0;
+                    distance[next] = next_distance;
+                    queue[tail++] = next;
+                }
+            }
+        }
+    }
+
+    if (tail != count || distance[0] != 0)
+        return 0;
+    for (uint16_t i = 0; i < count; ++i)
+        if (distance[i] == UINT8_MAX)
+            return 0;
+    return 1;
+}
+
+static int build_heuristics(void)
+{
+    return build_projection_distances(
+               PERMUTATIONS, permutation, perm_distance) &&
+           build_projection_distances(
+               ORIENTATIONS, orientation, ori_distance);
+}
+
+static uint8_t heuristic(uint16_t p, uint16_t o)
+{
+    uint8_t hp = perm_distance[p], ho = ori_distance[o];
+    return hp > ho ? hp : ho;
+}
+
 static uint8_t *build_table(uint8_t *diameter)
 {
     uint8_t *toward_solved = malloc(STATES);
@@ -326,10 +383,82 @@ static int self_test(void)
     return 1;
 }
 
+static int test_heuristics(void)
+{
+    uint8_t diameter;
+    uint8_t *exact_moves = build_table(&diameter);
+    if (!exact_moves)
+        return 0;
+    if (diameter != 11 || !build_heuristics()) {
+        free(exact_moves);
+        return 0;
+    }
+
+    uint8_t max_p = 0, max_o = 0;
+    for (uint16_t p = 0; p < PERMUTATIONS; ++p)
+        if (perm_distance[p] > max_p)
+            max_p = perm_distance[p];
+    for (uint16_t o = 0; o < ORIENTATIONS; ++o)
+        if (ori_distance[o] > max_o)
+            max_o = ori_distance[o];
+
+    printf("H2 permutation: states=%u solved=%u max=%u\n",
+           (unsigned) PERMUTATIONS, (unsigned) perm_distance[0],
+           (unsigned) max_p);
+    printf("H2 orientation: states=%u solved=%u max=%u\n",
+           (unsigned) ORIENTATIONS, (unsigned) ori_distance[0],
+           (unsigned) max_o);
+
+    for (uint32_t rank = 0; rank < STATES; ++rank) {
+        uint16_t p = (uint16_t) (rank / ORIENTATIONS);
+        uint16_t o = (uint16_t) (rank % ORIENTATIONS);
+        uint8_t h = heuristic(p, o), distance = 0;
+
+        while (p != 0 || o != 0) {
+            if (distance >= diameter) {
+                free(exact_moves);
+                return 0;
+            }
+            uint8_t move =
+                exact_moves[(uint32_t) p * ORIENTATIONS + o];
+            if (move >= MOVES) {
+                free(exact_moves);
+                return 0;
+            }
+            uint8_t face = (uint8_t) (move / 3U);
+            uint8_t turns = (uint8_t) (move % 3U + 1U);
+            for (uint8_t turn = 0; turn < turns; ++turn) {
+                p = permutation[face][p];
+                o = orientation[face][o];
+            }
+            ++distance;
+        }
+
+        if (h > distance) {
+            fprintf(stderr, "H1 failed: rank=%u h=%u d=%u\n",
+                    (unsigned) rank, (unsigned) h,
+                    (unsigned) distance);
+            free(exact_moves);
+            return 0;
+        }
+    }
+
+    free(exact_moves);
+    puts("H1 passed: 3674160 states checked");
+    return 1;
+}
+
 int main(int argc, char **argv)
 {
     state_t state;
     uint8_t diameter;
+    if (argc == 2 && !strcmp(argv[1], "--heuristic-test")) {
+        if (!test_heuristics()) {
+            fputs("heuristic-test failed\n", stderr);
+            return 1;
+        }
+        return output_failed();
+    }
     if (argc == 2 && !strcmp(argv[1], "--self-test")) {
         if (!self_test()) {
             fputs("self-test failed\n", stderr);
