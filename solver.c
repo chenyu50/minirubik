@@ -47,6 +47,7 @@ static uint8_t ori_distance[ORIENTATIONS];
 
 /* The three quarter-turns preserve the fixed front-upper-left corner. */
 /*@ requires face < 3;
+    requires \forall integer i; 0 <= i < CUBIES ==> state.o[i] < 3;
     assigns \nothing;
     ensures \forall integer i; 0 <= i < CUBIES ==>
               \result.p[i] == state.p[source[face][i]];
@@ -67,16 +68,27 @@ static state_t quarter_turn(state_t state, uint8_t face)
     for (uint8_t i = 0; i < CUBIES; ++i) {
         uint8_t from = source[face][i];
         result.p[i] = state.p[from];
-        result.o[i] = (uint8_t) ((state.o[from] + twist[face][i]) % 3U);
+        uint8_t value = (uint8_t) (state.o[from] + twist[face][i]);
+        if (value >= 3)
+            value = (uint8_t) (value - 3U);
+        result.o[i] = value;
     }
     return result;
 }
 
 static state_t apply_move(state_t state, uint8_t move)
 {
-    uint8_t turns = (uint8_t) (move % 3U + 1U);
+    uint8_t face = 0;
+    if (move >= 6) {
+        face = 2;
+        move = (uint8_t) (move - 6U);
+    } else if (move >= 3) {
+        face = 1;
+        move = (uint8_t) (move - 3U);
+    }
+    uint8_t turns = (uint8_t) (move + 1U);
     for (uint8_t i = 0; i < turns; ++i)
-        state = quarter_turn(state, (uint8_t) (move / 3U));
+        state = quarter_turn(state, face);
     return state;
 }
 
@@ -217,7 +229,7 @@ static int valid(const state_t *state)
                 return 0;
         sum = (uint8_t) (sum + state->o[i]);
     }
-    return sum % 3U == 0;
+    return sum == 0 || sum == 3 || sum == 6 || sum == 9 || sum == 12;
 }
 
 static void build_transitions(void)
@@ -454,7 +466,10 @@ static int parse_state(const char *input, state_t *state)
         int limit = i < 7 ? 7 : 3;
         if (input[i] < '1' || input[i] > '0' + limit)
             return 0;
-        (i < 7 ? state->p : state->o)[i % 7] = (uint8_t) (input[i] - '1');
+        if (i < 7)
+            state->p[i] = (uint8_t) (input[i] - '1');
+        else
+            state->o[i - 7] = (uint8_t) (input[i] - '1');
     }
     return input[14] == '\0' && valid(state);
 }
