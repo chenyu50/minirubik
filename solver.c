@@ -126,6 +126,32 @@ static uint32_t rank_state(const state_t *state)
     return p * ORIENTATIONS + o;
 }
 
+static void rank_coordinates(const state_t *state,
+                             uint16_t *permutation_rank,
+                             uint16_t *orientation_rank)
+{
+    uint8_t smaller[6];
+    for (uint8_t i = 0; i < 6; ++i) {
+        smaller[i] = 0;
+        for (uint8_t j = (uint8_t) (i + 1U); j < CUBIES; ++j)
+            smaller[i] += (uint8_t) (state->p[j] < state->p[i]);
+    }
+
+    uint32_t p = smaller[0];
+    p = (p << 2) + (p << 1) + smaller[1];
+    p = (p << 2) + p + smaller[2];
+    p = (p << 2) + smaller[3];
+    p = (p << 1) + p + smaller[4];
+    p = (p << 1) + smaller[5];
+
+    uint32_t o = 0;
+    for (uint8_t i = 0; i < 6; ++i)
+        o = (o << 1) + o + state->o[i];
+
+    *permutation_rank = (uint16_t) p;
+    *orientation_rank = (uint16_t) o;
+}
+
 /*@ requires \valid(state); requires rank < STATES; assigns *state; */
 static void unrank_state(uint32_t rank, state_t *state)
 {
@@ -457,7 +483,14 @@ static int self_test(void)
         unrank_state(rank, &state);
         if (!valid(&state) || rank_state(&state) != rank)
             return 0;
+
+        uint16_t p, o;
+        rank_coordinates(&state, &p, &o);
+        if (p >= PERMUTATIONS || o >= ORIENTATIONS ||
+            (uint32_t) p * ORIENTATIONS + o != rank)
+            return 0;
     }
+    puts("ranking coordinates matched all 3674160 states");
     return 1;
 }
 
@@ -762,9 +795,8 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    uint32_t rank = rank_state(&state);
-    uint16_t p = (uint16_t) (rank / ORIENTATIONS);
-    uint16_t o = (uint16_t) (rank % ORIENTATIONS);
+    uint16_t p, o;
+    rank_coordinates(&state, &p, &o);
     uint8_t path[11];
     int length = ida_search(p, o, path);
     if (!path_solves(state, path, length)) {
