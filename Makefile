@@ -24,13 +24,14 @@ mini: mini.c
 
 check: solver mini $(VECTORS)
 	./solver --self-test
+	./solver --search-test	
 	@expected=$$(mktemp); actual=$$(mktemp); \
 		trap 'rm -f "$$expected" "$$actual"' 0 1 2 15; \
 		count=0; \
 		while IFS='|' read -r state solution; do \
 			case "$$state" in ""|\#*) continue ;; esac; \
 			printf '%s\n' "$$solution" >"$$expected"; \
-			for binary in ./solver ./mini; do \
+			for binary in ./mini; do \
 				$$binary "$$state" >"$$actual"; \
 				status=$$?; \
 				test $$status -eq 0 || { \
@@ -44,7 +45,7 @@ $$(wc -c <"$$actual") produced)"; exit 1; }; \
 			done; \
 			count=$$((count + 1)); \
 		done <$(VECTORS); \
-		echo "$$count solution vectors matched by solver and mini"
+		echo "$$count baseline solution vectors matched by mini"
 	@for binary in ./solver ./mini; do \
 		for bad in $(INVALID_STATES); do \
 			$$binary "$$bad" >/dev/null 2>&1; \

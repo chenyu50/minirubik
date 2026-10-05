@@ -271,6 +271,84 @@ static uint8_t heuristic(uint16_t p, uint16_t o)
     return hp > ho ? hp : ho;
 }
 
+typedef struct {
+    uint16_t p, o, next_p, next_o;
+    uint8_t face, turn, previous_face;
+} search_frame_t;
+
+static int ida_search(uint16_t root_p, uint16_t root_o,
+                      uint8_t solution[11])
+{
+    search_frame_t frames[12];
+
+    for (unsigned bound = heuristic(root_p, root_o); bound <= 11; ++bound) {
+        unsigned depth = 0;
+        frames[0] = (search_frame_t) {
+            root_p, root_o, root_p, root_o, 0, 0, 3
+        };
+
+        for (;;) {
+            search_frame_t *frame = &frames[depth];
+            if (frame->p == 0 && frame->o == 0)
+                return (int) depth;
+
+            if (depth == bound || frame->face >= 3) {
+                if (depth == 0)
+                    break;
+                --depth;
+                continue;
+            }
+
+            if (frame->face == frame->previous_face) {
+                ++frame->face;
+                frame->turn = 0;
+                frame->next_p = frame->p;
+                frame->next_o = frame->o;
+                continue;
+            }
+
+            uint8_t face = frame->face, turn = frame->turn;
+            uint16_t child_p = permutation[face][frame->next_p];
+            uint16_t child_o = orientation[face][frame->next_o];
+
+            frame->next_p = child_p;
+            frame->next_o = child_o;
+            ++frame->turn;
+            if (frame->turn == 3) {
+                ++frame->face;
+                frame->turn = 0;
+                frame->next_p = frame->p;
+                frame->next_o = frame->o;
+            }
+
+            if (depth + 1U + heuristic(child_p, child_o) > bound)
+                continue;
+
+            solution[depth] = (uint8_t) ((face << 1) + face + turn);
+            ++depth;
+            frames[depth] = (search_frame_t) {
+                child_p, child_o, child_p, child_o, 0, 0, face
+            };
+        }
+    }
+    return -1;
+}
+
+static int path_solves(state_t state, const uint8_t *path, int length)
+{
+    if (length < 0 || length > 11)
+        return 0;
+    for (int i = 0; i < length; ++i) {
+        if (path[i] >= MOVES)
+            return 0;
+        state = apply_move(state, path[i]);
+    }
+    for (uint8_t i = 0; i < CUBIES; ++i)
+        if (state.p[i] != i || state.o[i] != 0)
+            return 0;
+    return 1;
+}
+
 static uint8_t *build_table(uint8_t *diameter)
 {
     uint8_t *toward_solved = malloc(STATES);
@@ -448,10 +526,132 @@ static int test_heuristics(void)
     return 1;
 }
 
+static int exact_distance(const uint8_t *table, uint16_t p, uint16_t o)
+{
+    int distance = 0;
+    while (p != 0 || o != 0) {
+        if (distance >= 11)
+            return -1;
+        uint8_t move = table[(uint32_t) p * ORIENTATIONS + o];
+        if (move >= MOVES)
+            return -1;
+        uint8_t face = (uint8_t) (move / 3U);
+        uint8_t turns = (uint8_t) (move % 3U + 1U);
+        for (uint8_t turn = 0; turn < turns; ++turn) {
+            p = permutation[face][p];
+            o = orientation[face][o];
+        }
+        ++distance;
+    }
+    return distance;
+}
+
+static int check_search_case(state_t state, const uint8_t *table)
+{
+    uint32_t rank = rank_state(&state);
+    uint16_t p = (uint16_t) (rank / ORIENTATIONS);
+    uint16_t o = (uint16_t) (rank % ORIENTATIONS);
+    uint8_t path[11];
+    int expected = exact_distance(table, p, o);
+    int length = ida_search(p, o, path);
+    if (expected < 0 || length != expected ||
+        !path_solves(state, path, length)) {
+        fprintf(stderr, "search mismatch: rank=%u expected=%d got=%d\n",
+                (unsigned) rank, expected, length);
+        return 0;
+    }
+    return 1;
+}
+
+static int test_search(void)
+{
+    uint8_t diameter;
+    uint8_t *table = build_table(&diameter);
+    if (!table)
+        return 0;
+    if (diameter != 11 || !build_heuristics()) {
+        free(table);
+        return 0;
+    }
+
+    FILE *vectors = fopen("tests/solutions.txt", "r");
+    if (!vectors) {
+        free(table);
+        return 0;
+    }
+
+    char line[256];
+    unsigned count = 0;
+    int ok = 1;
+    while (fgets(line, sizeof line, vectors)) {
+        if (line[0] == '#' || line[0] == '\n' || line[0] == '\r')
+            continue;
+        char *separator = strchr(line, '|');
+        state_t state;
+        if (!separator) {
+            ok = 0;
+            break;
+        }
+        *separator = '\0';
+        if (!parse_state(line, &state) || !check_search_case(state, table)) {
+            ok = 0;
+            break;
+        }
+        ++count;
+    }
+    if (ferror(vectors))
+        ok = 0;
+    fclose(vectors);
+    if (!ok || count == 0) {
+        free(table);
+        return 0;
+    }
+
+    const state_t solved = {{0, 1, 2, 3, 4, 5, 6}, {0}};
+    if (!check_search_case(solved, table)) {
+        free(table);
+        return 0;
+    }
+    for (uint8_t move = 0; move < MOVES; ++move) {
+        if (!check_search_case(apply_move(solved, move), table)) {
+            free(table);
+            return 0;
+        }
+    }
+    state_t short_scramble = apply_move(apply_move(solved, 0), 3);
+    if (!check_search_case(short_scramble, table)) {
+        free(table);
+        return 0;
+    }
+
+    char short_input[15];
+    for (uint8_t i = 0; i < CUBIES; ++i) {
+        short_input[i] = (char) ('1' + short_scramble.p[i]);
+        short_input[i + CUBIES] = (char) ('1' + short_scramble.o[i]);
+    }
+    short_input[14] = '\0';
+
+    free(table);
+    printf("%u vectors matched exact BFS lengths and replayed successfully\n",
+           count);
+    puts("solved, 9 one-move states, and short scramble R B passed");
+    printf("short scramble input: %s\n", short_input);
+    printf("search frame buffers: %u bytes\n",
+           (unsigned) (12U * sizeof(search_frame_t)));
+    return 1;
+}
+
 int main(int argc, char **argv)
 {
     state_t state;
     uint8_t diameter;
+    if (argc == 2 && !strcmp(argv[1], "--search-test")) {
+        if (!test_search()) {
+            fputs("search-test failed\n", stderr);
+            return 1;
+        }
+        return output_failed();
+    } 
     if (argc == 2 && !strcmp(argv[1], "--heuristic-test")) {
         if (!test_heuristics()) {
             fputs("heuristic-test failed\n", stderr);
@@ -483,19 +683,25 @@ int main(int argc, char **argv)
                 argc > 0 && argv[0] ? argv[0] : "solver");
         return 2;
     }
-    uint8_t *table = build_table(&diameter);
-    if (!table) {
-        fputs("could not build complete state table\n", stderr);
+
+    build_transitions();
+    if (!build_heuristics()) {
+        fputs("could not build heuristic tables\n", stderr);
         return 1;
     }
-    const char *separator = "";
-    for (uint32_t rank = rank_state(&state); rank; rank = rank_state(&state)) {
-        uint8_t move = table[rank];
-        printf("%s%s", separator, move_names[move]);
-        separator = " ";
-        state = apply_move(state, move);
+
+    uint32_t rank = rank_state(&state);
+    uint16_t p = (uint16_t) (rank / ORIENTATIONS);
+    uint16_t o = (uint16_t) (rank % ORIENTATIONS);
+    uint8_t path[11];
+    int length = ida_search(p, o, path);
+    if (!path_solves(state, path, length)) {
+        fputs("search or path validation failed\n", stderr);
+        return 1;
     }
+
+    for (int i = 0; i < length; ++i)
+        printf("%s%s", i ? " " : "", move_names[path[i]]);
     putchar('\n');
-    free(table);
     return output_failed();
 }
