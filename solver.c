@@ -641,10 +641,82 @@ static int test_search(void)
     return 1;
 }
 
+static int test_full_search(void)
+{
+    uint8_t diameter;
+    uint8_t *table = build_table(&diameter);
+    if (!table) {
+        fputs("could not build complete BFS table\n", stderr);
+        return 0;
+    }
+    if (diameter != 11 || !build_heuristics()) {
+        free(table);
+        return 0;
+    }
+
+    uint32_t distance11 = 0;
+    puts("H3 started: checking all states against exact BFS distances");
+    fflush(stdout);
+
+    for (uint32_t rank = 0; rank < STATES; ++rank) {
+        state_t state;
+        unrank_state(rank, &state);
+        if (!valid(&state) || rank_state(&state) != rank) {
+            fprintf(stderr, "H3 state decoding failed: rank=%u\n",
+                    (unsigned) rank);
+            free(table);
+            return 0;
+        }
+        uint16_t p = (uint16_t) (rank / ORIENTATIONS);
+        uint16_t o = (uint16_t) (rank % ORIENTATIONS);
+        uint8_t path[11];
+        int expected = exact_distance(table, p, o);
+        if (expected < 0) {
+            fprintf(stderr, "H3 BFS reference failed: rank=%u\n",
+                    (unsigned) rank);
+            free(table);
+            return 0;
+        }
+        int length = ida_search(p, o, path);
+
+        if (length != expected || !path_solves(state, path, length)) {
+            fprintf(stderr, "H3 failed: rank=%u expected=%d got=%d\n",
+                    (unsigned) rank, expected, length);
+            free(table);
+            return 0;
+        }
+        if (expected == 11)
+            ++distance11;
+
+        uint32_t checked = rank + 1U;
+        if (checked % 65536U == 0 || checked == STATES) {
+            printf("H3 progress: %u/%u states\n",
+                   (unsigned) checked, (unsigned) STATES);
+            fflush(stdout);
+        }
+    }
+
+    free(table);
+    if (distance11 != 2644U) {
+        fprintf(stderr, "unexpected distance-11 count: %u\n",
+                (unsigned) distance11);
+        return 0;
+    }
+    printf("distance-11 states checked: %u\n", (unsigned) distance11);
+    printf("H3 passed: %u optimal lengths and replayed paths\n",
+           (unsigned) STATES);
+    return 1;
+}
+
 int main(int argc, char **argv)
 {
     state_t state;
     uint8_t diameter;
+    if (argc == 2 && !strcmp(argv[1], "--full-search-test")) {
+        if (!test_full_search())
+            return 1;
+        return output_failed();
+    }    
     if (argc == 2 && !strcmp(argv[1], "--search-test")) {
         if (!test_search()) {
             fputs("search-test failed\n", stderr);
