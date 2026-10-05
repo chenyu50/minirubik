@@ -1,0 +1,65 @@
+dca5a995e6c2f0734d27a29e11a583c3bb30d4c6
+H3 started: checking all states against exact BFS distances
+H3 progress: 65536/3674160 states
+H3 progress: 131072/3674160 states
+H3 progress: 196608/3674160 states
+H3 progress: 262144/3674160 states
+H3 progress: 327680/3674160 states
+H3 progress: 393216/3674160 states
+H3 progress: 458752/3674160 states
+H3 progress: 524288/3674160 states
+H3 progress: 589824/3674160 states
+H3 progress: 655360/3674160 states
+H3 progress: 720896/3674160 states
+H3 progress: 786432/3674160 states
+H3 progress: 851968/3674160 states
+H3 progress: 917504/3674160 states
+H3 progress: 983040/3674160 states
+H3 progress: 1048576/3674160 states
+H3 progress: 1114112/3674160 states
+H3 progress: 1179648/3674160 states
+H3 progress: 1245184/3674160 states
+H3 progress: 1310720/3674160 states
+H3 progress: 1376256/3674160 states
+H3 progress: 1441792/3674160 states
+H3 progress: 1507328/3674160 states
+H3 progress: 1572864/3674160 states
+H3 progress: 1638400/3674160 states
+H3 progress: 1703936/3674160 states
+H3 progress: 1769472/3674160 states
+H3 progress: 1835008/3674160 states
+H3 progress: 1900544/3674160 states
+H3 progress: 1966080/3674160 states
+H3 progress: 2031616/3674160 states
+H3 progress: 2097152/3674160 states
+H3 progress: 2162688/3674160 states
+H3 progress: 2228224/3674160 states
+H3 progress: 2293760/3674160 states
+H3 progress: 2359296/3674160 states
+H3 progress: 2424832/3674160 states
+H3 progress: 2490368/3674160 states
+H3 progress: 2555904/3674160 states
+H3 progress: 2621440/3674160 states
+H3 progress: 2686976/3674160 states
+H3 progress: 2752512/3674160 states
+H3 progress: 2818048/3674160 states
+H3 progress: 2883584/3674160 states
+H3 progress: 2949120/3674160 states
+H3 progress: 3014656/3674160 states
+H3 progress: 3080192/3674160 states
+H3 progress: 3145728/3674160 states
+H3 progress: 3211264/3674160 states
+H3 progress: 3276800/3674160 states
+H3 progress: 3342336/3674160 states
+H3 progress: 3407872/3674160 states
+H3 progress: 3473408/3674160 states
+H3 progress: 3538944/3674160 states
+H3 progress: 3604480/3674160 states
+H3 progress: 3670016/3674160 states
+H3 progress: 3674160/3674160 states
+distance-11 states checked: 2644
+H3 passed: 3674160 optimal lengths and replayed paths
+real 280.04
+user 270.31
+sys 1.46
+exit=0
