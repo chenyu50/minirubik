@@ -1,0 +1,17 @@
+permutation: entries=15120 max=5039 solved=1104,9,198
+orientation: entries=2187 max=728 solved=426,16,0
+perm_distance: entries=5040 max=7 solved=0
+ori_distance: entries=729 max=6 solved=0
+table payload: 40383 bytes
+generated/tables.h and generated/tables.inc written
+exit=0
+/tmp/minirubik-tables.o  :
+section              size   addr
+.text                   0      0
+.data                   0      0
+.bss                    0      0
+.rodata             40383      0
+.riscv.attributes      26      0
+Total               40409
+
+
