@@ -1,0 +1,9 @@
+run_asm () {
+	riscv64-unknown-elf-gcc -march=rv32i -mabi=ilp32 -mno-relax -nostdlib "-DINPUT_STATE=\"$1\"" target/start.S target/state.S target/moves.S target/search.S target/main.S -Wl,--no-relax,-T,target/link.ld -Wl,-Map,"build/solver-base-$1.map" -o "build/solver-base-$1.elf" || return
+	"$RIPES_BIN" --mode cli --proc RV32_ISS --src "build/solver-base-$1.elf" -t elf --iret --runinfo --timeout 120000 > "measurements/asm-search-base-$1.log" 2>&1
+	asm_rc=$? 
+	printf 'input=%s ripes_cli_exit=%s\n' "$1" "$asm_rc" >> "measurements/asm-search-base-$1.log"
+	LC_ALL=C tr -d '\000' < "measurements/asm-search-base-$1.log" > "measurements/asm-search-base-$1.txt"
+	cat "measurements/asm-search-base-$1.txt"
+	return "$asm_rc"
+}
