@@ -1,0 +1,8 @@
+run_state_test () {
+	riscv64-unknown-elf-gcc -march=rv32i -mabi=ilp32 -mno-relax -nostdlib "-DINPUT_STATE=\"$1\"" "-DEXPECT_VALID=$2" "-DEXPECTED_P=$3" "-DEXPECTED_O=$4" target/state.S target/state_test.S target/start.S -Wl,--no-relax,-T,target/link.ld -o "build/state-$5.elf" || return
+	"$RIPES_BIN" --mode cli --proc RV32_ISS --src "build/state-$5.elf" -t elf --iret --runinfo --timeout 120000 > "measurements/asm-state-$5.log" 2>&1
+	state_rc=$? 
+	printf 'input=%s ripes_cli_exit=%s\n' "$1" "$state_rc" >> "measurements/asm-state-$5.log"
+	LC_ALL=C tr -d '\000' < "measurements/asm-state-$5.log" > "measurements/asm-state-$5.txt"
+	cat "measurements/asm-state-$5.txt"
+}

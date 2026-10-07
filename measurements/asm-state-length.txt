@@ -1,0 +1,11 @@
+ASM state test passed
+
+Program exited with code: 0
+===== instructions retired
+228
+===== simulation information (processor configuration, input file, ...)
+ISA extensions: 
+processor: RV32_ISS
+source file: build/state-length.elf
+
+input=123456711111111 ripes_cli_exit=0
