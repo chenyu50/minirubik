@@ -24,6 +24,7 @@ ida_search_asm:
     la s6, search_table_bases
     la s7, perm_distance
     la s8, ori_distance
+    li t6, 3
     add t0, s7, s0
     lbu s3, 0(t0)
     add t0, s8, s1
@@ -53,23 +54,26 @@ ida_search_asm:
     beqz t0, .Lsearch_backtrack
     beq a5, a7, .Lsearch_next_face
 
-    # Advance the cached coordinates by one quarter turn.
+    # Reuse the transition-table bases while the face is unchanged.
+    beq a5, t6, .Lsearch_bases_ready
     slli t0, a5, 3
     add t0, s6, t0
-    lw t1, 0(t0)
-    lw t2, 4(t0)
+    lw t4, 0(t0)
+    lw t5, 4(t0)
+    mv t6, a5
+.Lsearch_bases_ready:
     slli t3, a3, 1
-    add t1, t1, t3
+    add t1, t4, t3
     lhu a0, 0(t1)
     slli t3, a4, 1
-    add t2, t2, t3
+    add t2, t5, t3
     lhu a1, 0(t2)
     mv a3, a0
     mv a4, a1
 
     # Retain the move being tried before advancing the parent cursor.
-    mv t4, a5
-    mv t5, a6
+    mv t3, a5
+    mv a2, a6
     addi a6, a6, 1
     li t0, 3
     bne a6, t0, .Lsearch_heuristic
@@ -91,9 +95,9 @@ ida_search_asm:
     bltu s3, t1, .Lsearch_loop
 
     # Record this move and save the parent only when descending.
-    slli t0, t4, 1
-    add t0, t0, t4
-    add t0, t0, t5
+    slli t0, t3, 1
+    add t0, t0, t3
+    add t0, t0, a2
     add t1, s2, s4
     sb t0, 0(t1)
 
@@ -113,7 +117,7 @@ ida_search_asm:
     mv a4, a1
     li a5, 0
     li a6, 0
-    mv a7, t4
+    mv a7, t3
     j .Lsearch_loop
 
 .Lsearch_next_face:
