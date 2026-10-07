@@ -1,0 +1,8 @@
+riscv64-unknown-elf-gcc (g6afcc4f6d) 16.1.0
+Copyright (C) 2026 Free Software Foundation, Inc.
+This is free software; see the source for copying conditions.  There is NO
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+build_ref () {
+	riscv64-unknown-elf-gcc -O2 -std=c99 -Wall -Wextra -Wpedantic -march=rv32i -mabi=ilp32 -ffreestanding -fno-builtin -fno-stack-protector -fno-pic -fno-pie -fno-unwind-tables -fno-asynchronous-unwind-tables -msmall-data-limit=0 -mno-relax -nostdlib "-DINPUT_STATE=\"$1\"" target/reference.c target/start.S -Wl,--no-relax,-T,target/link.ld -Wl,-Map,"build/reference-$1.map" -o "build/reference-$1.elf"
+}

@@ -1,0 +1,12 @@
+cc -O3 -std=c99 -Wall -Wextra -Wpedantic solver.c -o solver
+./solver --self-test
+ranking coordinates matched all 3674160 states
+3674160 states; diameter 11
+./solver --search-test	
+8 vectors matched exact BFS lengths and replayed successfully
+solved, 9 one-move states, and short scramble R B passed
+short scramble input: 25346712313322
+search frame buffers: 144 bytes
+8 baseline solution vectors matched by mini
+invalid input rejected with status 2, unwritable stdout with status 1
+exit=0

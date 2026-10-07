@@ -1,0 +1,9 @@
+build/reference-21345671111111.elf  :
+section              size        addr
+.text                1672           0
+.rodata             40583   268435456
+.bss                 4096   268476048
+.riscv.attributes      28           0
+Total               46379
+
+

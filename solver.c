@@ -1,7 +1,9 @@
 #include <stdint.h>
+#ifndef MINIRUBIK_TARGET
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#endif
 
 enum {
     CUBIES = 7,
@@ -26,7 +28,9 @@ typedef struct {
 
 static const char *const move_names[MOVES] = {"R",  "R2", "R'", "B", "B2",
                                               "B'", "D",  "D2", "D'"};
+#ifndef MINIRUBIK_TARGET
 static const uint8_t inverse_move[MOVES] = {2, 1, 0, 5, 4, 3, 8, 7, 6};
+#endif
 /* Each destination takes a cubie from source[face][destination]. */
 static const uint8_t source[3][CUBIES] = {
     {1, 4, 2, 0, 3, 5, 6},
@@ -39,11 +43,15 @@ static const uint8_t twist[3][CUBIES] = {
     {0, 0, 0, 0, 0, 0, 0},
 };
 
+#ifdef MINIRUBIK_TARGET
+#include "generated/tables.h"
+#else
 static uint16_t permutation[3][PERMUTATIONS];
 static uint16_t orientation[3][ORIENTATIONS];
 
 static uint8_t perm_distance[PERMUTATIONS];
 static uint8_t ori_distance[ORIENTATIONS];
+#endif
 
 /* The three quarter-turns preserve the fixed front-upper-left corner. */
 /*@ requires face < 3;
@@ -92,6 +100,7 @@ static state_t apply_move(state_t state, uint8_t move)
     return state;
 }
 
+#ifndef MINIRUBIK_TARGET
 /*@ requires \valid_read(state);
     requires \forall integer i; 0 <= i < CUBIES ==>
       0 <= state->p[i] < CUBIES;
@@ -137,6 +146,7 @@ static uint32_t rank_state(const state_t *state)
         o = o * 3U + state->o[i];
     return p * ORIENTATIONS + o;
 }
+#endif
 
 static void rank_coordinates(const state_t *state,
                              uint16_t *permutation_rank,
@@ -164,6 +174,7 @@ static void rank_coordinates(const state_t *state,
     *orientation_rank = (uint16_t) o;
 }
 
+#ifndef MINIRUBIK_TARGET
 /*@ requires \valid(state); requires rank < STATES; assigns *state; */
 static void unrank_state(uint32_t rank, state_t *state)
 {
@@ -186,6 +197,7 @@ static void unrank_state(uint32_t rank, state_t *state)
     }
     state->o[6] = (uint8_t) ((3U - sum % 3U) % 3U);
 }
+#endif
 
 /*@ requires \valid_read(state);
     requires \initialized(&state->p[0..6]) && \initialized(&state->o[0..6]);
@@ -232,6 +244,7 @@ static int valid(const state_t *state)
     return sum == 0 || sum == 3 || sum == 6 || sum == 9 || sum == 12;
 }
 
+#ifndef MINIRUBIK_TARGET
 static void build_transitions(void)
 {
     state_t state;
@@ -302,6 +315,7 @@ static int build_heuristics(void)
            build_projection_distances(
                ORIENTATIONS, orientation, ori_distance);
 }
+#endif
 
 static uint8_t heuristic(uint16_t p, uint16_t o)
 {
@@ -387,6 +401,7 @@ static int path_solves(state_t state, const uint8_t *path, int length)
     return 1;
 }
 
+#ifndef MINIRUBIK_TARGET
 static uint8_t *build_table(uint8_t *diameter)
 {
     uint8_t *toward_solved = malloc(STATES);
@@ -431,6 +446,7 @@ static uint8_t *build_table(uint8_t *diameter)
     }
     return toward_solved;
 }
+#endif
 
 /*@ requires valid_read_string(input);
     requires \valid(state);
@@ -474,6 +490,7 @@ static int parse_state(const char *input, state_t *state)
     return input[14] == '\0' && valid(state);
 }
 
+#ifndef MINIRUBIK_TARGET
 /* stdout is fully buffered off a terminal, so a write error surfaces at the
  * flush, not at the printf that queued the bytes. Every exit path that has
  * produced output goes through here.
@@ -824,3 +841,4 @@ int main(int argc, char **argv)
     putchar('\n');
     return output_failed();
 }
+#endif
