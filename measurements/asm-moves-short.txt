@@ -1,0 +1,11 @@
+moves test passed
+
+Program exited with code: 0
+===== instructions retired
+15180
+===== simulation information (processor configuration, input file, ...)
+ISA extensions: 
+processor: RV32_ISS
+source file: build/moves-short.elf
+
+input=25346712313322 ripes_cli_exit=0

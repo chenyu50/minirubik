@@ -1,0 +1,8 @@
+run_moves_test () {
+	riscv64-unknown-elf-gcc -march=rv32i -mabi=ilp32 -mno-relax -nostdlib "-DINPUT_STATE=\"$1\"" "-DPATH_LENGTH=$2" "-DPATH_BYTES=$3" "-DEXPECT_SOLVES=$4" target/state.S target/moves.S target/moves_test.S target/start.S -Wl,--no-relax,-T,target/link.ld -o "build/moves-$5.elf" || return
+	"$RIPES_BIN" --mode cli --proc RV32_ISS --src "build/moves-$5.elf" -t elf --iret --runinfo --timeout 120000 > "measurements/asm-moves-$5.log" 2>&1
+	moves_rc=$? 
+	printf 'input=%s ripes_cli_exit=%s\n' "$1" "$moves_rc" >> "measurements/asm-moves-$5.log"
+	LC_ALL=C tr -d '\000' < "measurements/asm-moves-$5.log" > "measurements/asm-moves-$5.txt"
+	cat "measurements/asm-moves-$5.txt"
+}

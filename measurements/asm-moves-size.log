@@ -1,0 +1,9 @@
+build/moves-hard.elf  :
+section             size        addr
+.text               1284           0
+.rodata              203   268435456
+.bss                4144   268435664
+.riscv.attributes     26           0
+Total               5657
+
+
