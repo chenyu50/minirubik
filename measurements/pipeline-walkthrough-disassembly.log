@@ -1,0 +1,23 @@
+
+build/solver-cli-25346712313322.elf:     file format elf32-littleriscv
+
+
+Disassembly of section .text:
+
+00000044 <parse_state_asm>:
+  44:	00700293          	li	t0,7
+  48:	00000313          	li	t1,0
+  4c:	00054383          	lbu	t2,0(a0)
+  50:	fcf38393          	addi	t2,t2,-49
+  54:	0073be13          	sltiu	t3,t2,7
+  58:	080e0063          	beqz	t3,d8 <parse_state_asm+0x94>
+  5c:	00100e13          	li	t3,1
+  60:	007e1e33          	sll	t3,t3,t2
+  64:	01c37eb3          	and	t4,t1,t3
+  68:	060e9863          	bnez	t4,d8 <parse_state_asm+0x94>
+  6c:	01c36333          	or	t1,t1,t3
+  70:	00758023          	sb	t2,0(a1)
+  74:	00150513          	addi	a0,a0,1
+  78:	00158593          	addi	a1,a1,1
+  7c:	fff28293          	addi	t0,t0,-1
+  80:	fc0296e3          	bnez	t0,4c <parse_state_asm+0x8>
