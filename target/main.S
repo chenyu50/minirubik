@@ -1,3 +1,6 @@
+#ifndef RENDER
+#define RENDER 0
+#endif
 .section .text,"ax",@progbits
 .globl main
 .type main,@function
@@ -12,6 +15,10 @@ main:
     la a1, solver_cube_state
     call parse_state_asm
     beqz a0, .Lsolver_invalid_input
+#if RENDER
+    la a0, solver_cube_state
+    call render_cube_asm
+#endif
 
     la a0, solver_cube_state
     call rank_coordinates_asm
@@ -42,10 +49,27 @@ main:
     lw a0, 0(t0)
     li a7, 4
     ecall
+#if RENDER
+    la a0, solver_cube_state
+    add t0, s2, s1
+    lbu a1, 0(t0)
+    call apply_move_asm
+    beqz a0, .Lsolver_search_failed
+
+    la a0, solver_cube_state
+    call render_cube_asm
+#endif
     addi s1, s1, 1
     j .Lsolver_print_loop
 
 .Lsolver_print_newline:
+#if RENDER
+    la a0, solver_cube_state
+    la a1, solver_path
+    li a2, 0
+    call path_solves_asm
+    beqz a0, .Lsolver_search_failed
+#endif
     la a0, solver_newline
     li a7, 4
     ecall

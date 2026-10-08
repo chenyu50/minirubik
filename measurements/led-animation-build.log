@@ -1,0 +1,10 @@
+build_solver () {
+	local solver_build_kind
+	if [ "$2" = 1 ]
+	then
+		solver_build_kind=gui 
+	else
+		solver_build_kind=cli 
+	fi
+	riscv64-unknown-elf-gcc -march=rv32i -mabi=ilp32 -mno-relax -nostdlib -g -gdwarf-4 "-DRENDER=$2" "-DINPUT_STATE=\"$1\"" target/start.S target/state.S target/moves.S target/search.S target/main.S target/render.S -Wl,--no-relax,-T,target/link.ld -o "build/solver-$solver_build_kind-$1.elf"
+}

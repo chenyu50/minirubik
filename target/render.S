@@ -100,6 +100,11 @@ render_cube_asm:
     addi s1, s1, 1
     li t0, 24
     bltu s1, t0, .Lrender_facelet
+    
+.globl render_frame_ready
+.type render_frame_ready,@function
+render_frame_ready:
+    nop
 
     lw s3, 0(sp)
     lw s2, 4(sp)

@@ -1,0 +1,7 @@
+MATCH input=12345671111111 section=.text
+MATCH input=12345671111111 section=.rodata
+MATCH input=25346712313322 section=.text
+MATCH input=25346712313322 section=.rodata
+MATCH input=21345671111111 section=.text
+MATCH input=21345671111111 section=.rodata
+exit=0

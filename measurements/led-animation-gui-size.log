@@ -1,0 +1,14 @@
+build/solver-gui-21345671111111.elf  :
+section              size        addr
+.text                2076           0
+.rodata             41256   268435456
+.bss                 4128   268476720
+.riscv.attributes      26           0
+.debug_line          3254           0
+.debug_info           334           0
+.debug_abbrev         240           0
+.debug_aranges        192           0
+.debug_str            390           0
+Total               51896
+
+
