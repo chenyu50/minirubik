@@ -1,0 +1,5 @@
+Benchmark: states=3674160 diameter=11
+distance-11 inputs exported: 2644
+fixed input included: yes
+output: tests/distance11.txt
+exit=0
