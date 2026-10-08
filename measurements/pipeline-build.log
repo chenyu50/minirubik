@@ -1,0 +1,8 @@
+run_pipeline () {
+	"$RIPES_BIN" --mode cli --proc RV32_5S --src "build/solver-cache-$1.elf" -t elf --iret --cycles --runinfo --timeout 300000 > "measurements/pipeline-$1.log" 2>&1
+	pipeline_rc=$? 
+	printf 'input=%s ripes_cli_exit=%s\n' "$1" "$pipeline_rc" >> "measurements/pipeline-$1.log"
+	LC_ALL=C tr -d '\000' < "measurements/pipeline-$1.log" > "measurements/pipeline-$1.txt"
+	cat "measurements/pipeline-$1.txt"
+	return "$pipeline_rc"
+}

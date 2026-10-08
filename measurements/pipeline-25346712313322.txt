@@ -1,0 +1,13 @@
+B' R'
+
+Program exited with code: 0
+===== cycles
+3431
+===== instructions retired
+2523
+===== simulation information (processor configuration, input file, ...)
+ISA extensions: 
+processor: RV32_5S
+source file: build/solver-cache-25346712313322.elf
+
+input=25346712313322 ripes_cli_exit=0
