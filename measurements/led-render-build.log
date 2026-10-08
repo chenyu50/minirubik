@@ -1,0 +1,3 @@
+build_render_test () {
+	riscv64-unknown-elf-gcc -march=rv32i -mabi=ilp32 -mno-relax -nostdlib -g -gdwarf-4 -DRENDER=1 "-DINPUT_STATE=\"$1\"" target/start.S target/state.S target/render.S target/render_test.S -Wl,--no-relax,-T,target/link.ld -o "build/render-$1.elf"
+}

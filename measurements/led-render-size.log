@@ -1,0 +1,14 @@
+build/render-21345671111111.elf  :
+section             size        addr
+.text                792           0
+.rodata              729   268435456
+.bss                4112   268436192
+.riscv.attributes     26           0
+.debug_line         1372           0
+.debug_info          208           0
+.debug_abbrev        160           0
+.debug_aranges       128           0
+.debug_str           303           0
+Total               7830
+
+
