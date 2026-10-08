@@ -1,0 +1,12 @@
+R B R B' R2 B D' R D' B2 R'
+
+Program exited with code: 0
+===== instructions retired
+6374540
+===== simulation information (processor configuration, input file, ...)
+ISA extensions: 
+processor: RV32_ISS
+source file: build/distance11/current.elf
+
+
+input=16725431311121 ripes_cli_exit=0

@@ -1,0 +1,6 @@
+ripes=/Users/chenchongyu/Desktop/計算機組織/HW1/Ripes-v2.2.6-106-g5b8a616-mac-universal2.app/Contents/MacOS/Ripes
+processor=RV32_ISS
+ISA=RV32I
+renderer=off
+limit=50000000
+flags=-march=rv32i -mabi=ilp32 -mno-relax -nostdlib

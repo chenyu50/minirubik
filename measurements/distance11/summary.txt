@@ -1,0 +1,7 @@
+PASS: all 2644 distance-11 inputs
+all paths: length 11; target and host replay passed
+maximum instructions: 25482981
+worst input: 54721631111111
+fixed sample instructions: 9323094
+instruction limit: 50000000
+batch wall seconds: 1592.63

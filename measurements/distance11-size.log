@@ -1,0 +1,9 @@
+build/distance11/current.elf  :
+section              size        addr
+.text                1664           0
+.rodata             40581   268435456
+.bss                 4128   268476048
+.riscv.attributes      26           0
+Total               46399
+
+
