@@ -1,0 +1,15 @@
+LED geometry: 21 corner-position and 189 sticker rotations passed
+LED color lookup: entries=576 max=5 solved facelets=24
+LED table payload: 672 bytes
+generated/led_tables.inc written
+exit=0
+/tmp/minirubik-led-tables.o  :
+section             size   addr
+.text                  0      0
+.data                  0      0
+.bss                   0      0
+.rodata.led          672      0
+.riscv.attributes     26      0
+Total                698
+
+
